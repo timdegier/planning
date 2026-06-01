@@ -5,10 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Podcast Slate — Summer 2026</title>
   
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com/">
   <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=IBM+Plex+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
   
+  <!-- React & React DOM via CDN -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 
@@ -63,8 +65,9 @@
     .trend-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-2); font-weight: 600; }
     .trend-legend { font-weight: 500; color: var(--ink-3); display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; }
     .sw { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: -1px; }
-    .trend-svg { width: 100%; height: 116px; margin-top: 4px; }
-    .trend-x { font-family: "IBM Plex Mono", monospace; font-size: 9px; fill: var(--ink-3); }
+    .trend-svg { width: 100%; height: 116px; }
+    .trend-html-labels { display: flex; width: 100%; margin-top: 4px; }
+    .trend-x { font-family: "IBM Plex Mono", monospace; font-size: 10px; font-weight: 500; color: var(--ink-3); flex: 1; text-align: center; }
     .toolbar { display: flex; align-items: center; gap: 26px; padding: 12px 28px; flex-wrap: wrap; }
     .tb-group { display: inline-flex; align-items: center; gap: 9px; }
     .tb-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); font-weight: 600; }
@@ -179,10 +182,12 @@
     .bc-sw { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
     .bc-sw.cost { background: var(--cost); opacity: 0.85; } .bc-sw.over { background: var(--flag); }
     .bc-tick { width: 14px; height: 0; border-top: 2px solid var(--ink); display: inline-block; border-radius: 2px; }
-    .budget-svg { width: 100%; height: 196px; }
-    .bc-var { font-family: "IBM Plex Mono", monospace; font-size: 9.5px; font-weight: 600; }
-    .bc-var.over { fill: var(--flag); } .bc-var.ok { fill: var(--ok); }
-    .bc-wk { font-family: "IBM Plex Mono", monospace; font-size: 10px; fill: var(--ink-3); }
+    .budget-svg { width: 100%; height: 146px; }
+    .budget-html-labels { display: flex; width: 100%; margin-top: 10px; }
+    .bc-label-wrapper { flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .bc-var { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 600; }
+    .bc-var.over { color: var(--flag); } .bc-var.ok { color: var(--ok); }
+    .bc-wk { font-family: "IBM Plex Mono", monospace; font-size: 10px; color: var(--ink-3); margin-top: 2px; }
     .slate-summary-head { grid-column: 1 / -1; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); font-weight: 600; }
     .tt-v.over { color: color-mix(in oklch, var(--flag) 55%, white); }
     .tt-v.ok { color: color-mix(in oklch, var(--ok) 60%, white); }
@@ -317,7 +322,6 @@
       var linePts = data.weeklyFL.map((v, i) => [padL + i * bw + bw / 2, yF(v)]);
       var path = linePts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
       var dots = linePts.map((p, i) => _e("circle", { key: i, cx: p[0], cy: p[1], r: 2.6, fill: "var(--fl)" }));
-      var labels = data.weeks.map((w, i) => _e("text", { key: i, x: padL + i * bw + bw / 2, y: H - 8, textAnchor: "middle", className: "trend-x" }, w.code.replace("W", "")));
       
       return _e("div", { className: "trend" },
         _e("div", { className: "trend-head" }, _e("span", null, "Slate per week"), 
@@ -326,7 +330,10 @@
             _e("i", { className: "sw", style: { background: "var(--fl)", marginLeft: 10 } }), "First listens"
           )
         ),
-        _e("svg", { viewBox: `0 0 ${W} ${H}`, className: "trend-svg", preserveAspectRatio: "none" }, bars, _e("path", { d: path, fill: "none", stroke: "var(--fl)", strokeWidth: 2 }), dots, labels)
+        _e("svg", { viewBox: `0 0 ${W} 110`, className: "trend-svg", preserveAspectRatio: "none" }, bars, _e("path", { d: path, fill: "none", stroke: "var(--fl)", strokeWidth: 2 }), dots),
+        _e("div", { className: "trend-html-labels", style: { paddingLeft: `${(padL / W) * 100}%`, paddingRight: `${(padR / W) * 100}%` } },
+          data.weeks.map(w => _e("div", { key: w.code, className: "trend-x" }, w.code.replace("W", "")))
+        )
       );
     }
 
@@ -349,12 +356,19 @@
           _be("rect", { x: padL + i * bw, y: padT, width: bw, height: base - padT + 4, fill: "transparent" }),
           _be("rect", { x: cx - barW / 2, y: underTop, width: barW, height: base - underTop, rx: 2.5, fill: "var(--cost)", opacity: 0.85 }),
           over ? _be("rect", { x: cx - barW / 2, y: yOf(w.forecast), width: barW, height: yOf(w.budget) - yOf(w.forecast), rx: 2.5, fill: "var(--flag)" }) : null,
-          _be("line", { x1: cx - tickW / 2, y1: yOf(w.budget), x2: cx + tickW / 2, y2: yOf(w.budget), stroke: "var(--ink)", strokeWidth: 2, strokeLinecap: "round" }),
-          _be("text", { x: cx, y: base + 16, textAnchor: "middle", className: "bc-var " + (w.ruimte < 0 ? "over" : "ok") }, signEuro(w.ruimte)),
-          _be("text", { x: cx, y: base + 30, textAnchor: "middle", className: "bc-wk" }, w.code)
+          _be("line", { x1: cx - tickW / 2, y1: yOf(w.budget), x2: cx + tickW / 2, y2: yOf(w.budget), stroke: "var(--ink)", strokeWidth: 2, strokeLinecap: "round" })
         );
       });
-      return _be("svg", { viewBox: `0 0 ${W} ${H}`, className: "budget-svg", preserveAspectRatio: "none" }, cols);
+
+      return _be("div", { style: { display: "flex", flexDirection: "column", width: "100%" } },
+        _be("svg", { viewBox: `0 0 ${W} 154`, className: "budget-svg", preserveAspectRatio: "none" }, cols),
+        _be("div", { className: "budget-html-labels", style: { paddingLeft: `${(padL / W) * 100}%`, paddingRight: `${(padR / W) * 100}%` } },
+          b.weeks.map(w => _be("div", { key: w.code, className: "bc-label-wrapper" },
+            _be("span", { className: "bc-var " + (w.ruimte < 0 ? "over" : "ok") }, signEuro(w.ruimte)),
+            _be("span", { className: "bc-wk" }, w.code)
+          ))
+        )
+      );
     }
 
     function MonthChips({ months }) {
@@ -426,6 +440,7 @@
       );
     }
 
+    // --- MAIN CORE MATRIX INDICES ---
     function MatrixView({ data, mode, sort, flagged, flagReason, onHover }) {
       var weeks = data.weeks;
       var maxCellCost = 0, maxCellFL = 0, maxTotalCost = 0, maxTotalFL = 0;
@@ -456,7 +471,7 @@
       }
 
       var footer = _e("tr", { className: "foot-row" }, _e("th", { className: "foot-head" }, "Slate total"), weeks.map((w, i) => _e("td", { key: i, className: "foot-cell" }, _e("div", { className: "foot-c" }, fmtEuro(data.weeklyCost[i], true)), _e("div", { className: "foot-f" }, fmtNum(data.weeklyFL[i])))), _e("td", { className: "foot-total" }, _e("div", { className: "foot-c" }, fmtEuro(data.grandCost, true)), _e("div", { className: "foot-f" }, fmtNum(data.grandFL))));
-      return _e("div", { className: "matrix-wrap" }, _e("table", { className: "matrix" }, _e("colgroup", null, _e("col", { className: "col-show" }), weeks.map((w, i) => _e("col", { key: i, className: "col-wk" })), _e("col", { className: "col-tot" })), _e("thead", null, headerRow), _e("tbody", null, rows), _e("tfoot", null, footer)));
+      return _e("div", { className: "matrix-wrap" }, _e("table", { className: "matrix" }, _e("colgroup", null, _e("col", { className: "col-show" }), weeks.map((w, i) => _e("col", { key: i, className: "col-wk" })), _e("col", { className: "col-tot" }), _e("thead", null, headerRow), _e("tbody", null, rows), _e("tfoot", null, footer))));
     }
 
     function ScatterView({ data, flagged, onHover }) {
@@ -497,34 +512,6 @@
           dots, labels
         )
       );
-    }
-
-    function Seg({ value, options, onChange }) {
-      return React.createElement("div", { className: "seg" }, options.map(o => React.createElement("button", { key: o.v, className: "seg-btn" + (value === o.v ? " on" : ""), onClick: () => onChange(o.v) }, o.label)));
-    }
-
-    function Tooltip({ hover }) {
-      if (!hover) return null;
-      var i = hover.info;
-      var style = { left: Math.min(hover.x + 14, window.innerWidth - 230), top: Math.max(hover.y - 12, 8) };
-      var body = i.rows ? i.rows.map((r, k) => React.createElement("div", { className: "tt-row", key: k }, React.createElement("span", { className: "tt-k" }, r.k), React.createElement("span", { className: "tt-v " + (r.cls || "") }, r.v))) : (i.scatter ? React.createElement(React.Fragment, null, React.createElement("div", { className: "tt-row" }, React.createElement("span", { className: "tt-k" }, "Genre"), React.createElement("span", null, i.genre)), React.createElement("div", { className: "tt-row" }, React.createElement("span", { className: "tt-k cost" }, "Total cost"), React.createElement("span", null, fmtEuro(i.cost, false))), React.createElement("div", { className: "tt-row" }, React.createElement("span", { className: "tt-k fl" }, "First listens"), React.createElement("span", null, fmtNum(i.fl)))) : React.createElement(React.Fragment, null, i.show ? React.createElement("div", { className: "tt-sub" }, i.show) : null, React.createElement("div", { className: "tt-row" }, React.createElement("span", { className: "tt-k cost" }, "Cost"), React.createElement("span", null, i.cost ? fmtEuro(i.cost, false) : "—")), React.createElement("div", { className: "tt-row" }, React.createElement("span", { className: "tt-k fl" }, "First listens"), React.createElement("span", null, i.fl ? fmtNum(i.fl) : "—"))));
-      return React.createElement("div", { className: "tooltip", style: style }, React.createElement("div", { className: "tt-title" }, i.title), body);
-    }
-
-    function flagShows(data) {
-      var costs = data.shows.map(s => s.totalCost).slice().sort((a, b) => a - b);
-      var cpls = data.shows.map(s => s.totalCost / Math.max(s.totalFL, 1)).slice().sort((a, b) => a - b);
-      var medCost = costs[Math.floor(costs.length / 2)];
-      var medCpl = cpls[Math.floor(cpls.length / 2)];
-      var flagged = new Set(), reason = {};
-      data.shows.forEach(s => {
-        var cpl = s.totalCost / Math.max(s.totalFL, 1);
-        if (s.totalCost >= medCost && cpl >= medCpl * 1.3) {
-          flagged.add(s.name);
-          reason[s.name] = fmtEuro(s.totalCost, true) + " spend · " + fmtNum(s.totalFL) + " first listens — inefficiënt t.o.v. de rest";
-        }
-      });
-      return { flagged, reason };
     }
 
     function App() {
