@@ -1967,6 +1967,7 @@ function MonthChips(_ref2) {
 function BudgetSummary(_ref3) {
   var b = _ref3.b,
     onHover = _ref3.onHover;
+  if (!b) return null;
   var pct = (b.totalForecast / b.totalBudget - 1) * 100;
   var over = b.totalRuimte < 0;
   return _be("section", {
