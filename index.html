@@ -2350,8 +2350,7 @@ document.addEventListener("DOMContentLoaded",function(){
   log('App:' + (typeof App));
   log('DATA:' + (window.SLATE_DATA ? window.SLATE_DATA.shows.length + ' shows' : 'MISSING'));
   window.onerror = function(msg, src, line, col, err) {
-    document.body.innerHTML = '<div style="padding:40px;font-family:monospace;color:red"><h2>JS Error</h2><pre>' + msg + '
-' + (err && err.stack ? err.stack : '') + '</pre></div>';
+    document.body.innerHTML = '<div style="padding:40px;font-family:monospace;color:red"><h2>JS Error</h2><pre>' + msg + '\n' + (err && err.stack ? err.stack : '') + '</pre></div>';
   };
   try {
     var rootEl = document.getElementById("root");
