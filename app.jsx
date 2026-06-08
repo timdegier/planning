@@ -1,11 +1,10 @@
-/* app.jsx — header, controls, flag logic, view routing, tooltip, tweaks.
-   Full-year 2026: matrix defaults to MONTH granularity, toggle to week. */
+/* app.jsx — header, controls, flag logic, view routing, tooltip, tweaks. */
 
-const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+const TWEAK_DEFAULTS = {
   "density": "comfortable",
   "showFlags": true,
   "accent": ["oklch(0.55 0.13 255)", "oklch(0.64 0.11 195)"]
-}/*EDITMODE-END*/;
+};
 
 function flagShows(data) {
   const costs = data.shows.map(s => s.totalCost).slice().sort((a, b) => a - b);
@@ -70,6 +69,7 @@ function Seg({ value, options, onChange }) {
 
 function App() {
   const data = window.SLATE_DATA;
+  const budget = window.BUDGET_DATA;
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [view, setView] = React.useState("matrix");
   const [mode, setMode] = React.useState("both");
@@ -109,7 +109,7 @@ function App() {
       )
     ),
 
-    React.createElement(BudgetSummary, { data, onHover }),
+    React.createElement(BudgetSummary, { b: budget, onHover }),
 
     React.createElement("div", { className: "summary slate-summary" },
       React.createElement("div", { className: "slate-summary-head" }, "Bevestigde slate · " + data.shows.length + " shows met first-listen forecast"),
@@ -161,7 +161,7 @@ function App() {
 
     React.createElement("footer", { className: "foot-note" },
       "Bevestigd = shows In Production / Pre-Production / Launch. Placeholders = onbevestigde shows (In Negotiation, Concept Development, Pitching, Ended, Dead). ",
-      "Jan–Mei zijn gerealiseerde releases, Jun–Dec gepland. Genres zijn afgeleid; ‘first listens’ als absolute aantallen. ",
+      "Jan–Mei zijn gerealiseerde releases, Jun–Dec gepland. Genres zijn afgeleid; 'first listens' als absolute aantallen. ",
       "Vrije ruimte = budget − bevestigd − placeholder; overige (niet-exclusieve) uitgaven blijven buiten beschouwing."
     ),
 

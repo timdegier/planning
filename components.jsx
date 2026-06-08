@@ -53,11 +53,10 @@ function scaleW(v, max) {
 /* ---------- KPI strip ---------- */
 function KpiStrip({ data, flagged }) {
   const nShows = data.shows.length;
-  const nWeeks = data.weeks.length;
   const items = [
     { label: "Totale kosten", value: fmtEuro(data.grandCost, false), sub: "heel 2026 · " + nShows + " shows", accent: "var(--cost)" },
     { label: "Totaal first listens", value: fmtNum(data.grandFL), sub: "forecast over het jaar", accent: "var(--fl)" },
-    { label: "Gem. kosten / maand", value: fmtEuro(data.grandCost / 12, true), sub: "over " + nWeeks + " weken", accent: "var(--ink-2)" },
+    { label: "Gem. kosten / maand", value: fmtEuro(data.grandCost / 12, true), sub: "over 12 maanden", accent: "var(--ink-2)" },
     { label: "Gemarkeerde shows", value: String(flagged.size), sub: "veel kosten · weinig luisteraars", accent: "var(--flag)" }
   ];
   return _e("div", { className: "kpis" },
@@ -71,42 +70,36 @@ function KpiStrip({ data, flagged }) {
   );
 }
 
-/* ---------- weekly dual trend (cost bars + FL line), month-aware axis ---------- */
+/* ---------- monthly dual trend (cost bars + FL line) ---------- */
 function TrendChart({ data }) {
   const W = 560, H = 138, padL = 8, padR = 8, padT = 14, padB = 28;
-  const n = data.weeks.length;
-  const maxC = Math.max(...data.weeklyCost);
-  const maxF = Math.max(...data.weeklyFL);
+  const n = data.months.length; // 12
+  const maxC = Math.max(...data.monthlyCost);
+  const maxF = Math.max(...data.monthlyFL);
   const bw = (W - padL - padR) / n;
   const innerH = H - padT - padB;
   const yF = v => padT + innerH * (1 - v / maxF);
   const xMid = i => padL + i * bw + bw / 2;
 
-  const bars = data.weeklyCost.map((v, i) => {
+  const bars = data.monthlyCost.map((v, i) => {
     const h = innerH * (v / maxC);
     return _e("rect", { key: i, x: padL + i * bw + bw * 0.18, y: padT + innerH - h, width: bw * 0.64, height: h, rx: 1, fill: "var(--cost)", opacity: 0.26 });
   });
-  const linePts = data.weeklyFL.map((v, i) => [xMid(i), yF(v)]);
+  const linePts = data.monthlyFL.map((v, i) => [xMid(i), yF(v)]);
   const path = linePts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
 
-  // month boundaries from week.m
-  const boundaries = [];
-  data.weeks.forEach((w, i) => { if (i === 0 || w.m !== data.weeks[i - 1].m) boundaries.push({ i, m: w.m }); });
-  const seps = boundaries.filter(b => b.i > 0).map(b =>
-    _e("line", { key: "s" + b.i, x1: padL + b.i * bw, y1: padT, x2: padL + b.i * bw, y2: padT + innerH, stroke: "var(--hair)", strokeWidth: 1 }));
-  const mlabels = boundaries.map(b =>
-    _e("text", { key: "m" + b.i, x: padL + b.i * bw + 2, y: H - 9, className: "trend-x" }, NL_MONTHS[b.m]));
+  const mlabels = data.months.map((m, i) =>
+    _e("text", { key: i, x: xMid(i), y: H - 9, textAnchor: "middle", className: "trend-x" }, m.short));
 
   return _e("div", { className: "trend" },
     _e("div", { className: "trend-head" },
-      _e("span", null, "Slate per week"),
+      _e("span", null, "Slate per maand"),
       _e("span", { className: "trend-legend" },
         _e("i", { className: "sw", style: { background: "var(--cost)", opacity: 0.5 } }), "Kosten",
         _e("i", { className: "sw", style: { background: "var(--fl)", marginLeft: 10 } }), "First listens"
       )
     ),
     _e("svg", { viewBox: `0 0 ${W} ${H}`, className: "trend-svg", preserveAspectRatio: "none" },
-      seps,
       bars,
       _e("path", { d: path, fill: "none", stroke: "var(--fl)", strokeWidth: 1.75 }),
       mlabels
@@ -169,12 +162,12 @@ function ShowRow({ s, series, mode, units, maxCellCost, maxCellFL, maxTotalCost,
 
 /* ---------- matrix view (gran: 'maand' | 'week') ---------- */
 function MatrixView({ data, gran, mode, sort, flagged, flagReason, onHover }) {
-  const isMonth = gran === "maand";
+  const isMonth = !gran || gran === "maand";
 
   // column units + per-show accessor
   let units, footTotals;
   if (isMonth) {
-    units = data.months.map(m => ({ key: m.index, label: m.name, code: m.short, sub: m.weekIdxs.length + " wk", monthStart: false }));
+    units = data.months.map(m => ({ key: m.index, label: m.name, code: m.short, sub: m.actual ? "gerealiseerd" : "gepland", monthStart: false }));
     footTotals = { cost: data.monthlyCost, fl: data.monthlyFL };
   } else {
     units = data.weeks.map((w, i) => ({
